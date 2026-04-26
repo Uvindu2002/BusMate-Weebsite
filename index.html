@@ -659,6 +659,63 @@ a:hover { color: var(--accent-light); }
   color: var(--accent);
 }
 
+/* Supervisor card */
+.supervisor-section {
+  margin-bottom: 40px;
+}
+.supervisor-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.supervisor-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 560px;
+  transition: all .3s;
+}
+.supervisor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(var(--accent-rgb, 251,146,60), 0.08);
+}
+.supervisor-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(251,146,60,0.3), rgba(251,146,60,0.07));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+.supervisor-info h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.supervisor-info .sup-role {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.supervisor-info .sup-dept {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 /* ===== CONTACT ===== */
 .contact-grid {
   display: grid;
@@ -1273,6 +1330,18 @@ a:hover { color: var(--accent-light); }
     <span class="section-label">The Team</span>
     <h2 class="section-title">About Us</h2>
     <p class="section-desc">Final-year BSc (Hons) IT students specializing in Data Science at SLIIT, Faculty of Computing.</p>
+
+    <div class="supervisor-section">
+      <div class="supervisor-label">Project Supervisor</div>
+      <div class="supervisor-card">
+        <div class="supervisor-avatar">TD</div>
+        <div class="supervisor-info">
+          <h3>Ms. Thamali Dassanayake</h3>
+          <div class="sup-role">Supervisor</div>
+          <div class="sup-dept">Department of Computer Science<br>Faculty of Computing, SLIIT</div>
+        </div>
+      </div>
+    </div>
 
     <div class="team-grid">
 
