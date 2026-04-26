@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusMate — Intelligent Multi-Modal Driver Safety System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg-deep: #0a0f1a;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2332;
+  --surface: #1e293b;
+  --border: rgba(255,255,255,0.06);
+  --border-accent: rgba(251,146,60,0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #fb923c;
+  --accent-light: #fdba74;
+  --accent-glow: rgba(251,146,60,0.15);
+  --green: #34d399;
+  --green-muted: rgba(52,211,153,0.12);
+  --red: #f87171;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --max-w: 1200px;
+  --nav-h: 72px;
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 24px); }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+a { color: var(--accent); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--accent-light); }
+
+/* ===== UTILITY ===== */
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+.section { padding: 100px 0; position: relative; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: block;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 680px;
+  margin-bottom: 48px;
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+/* ===== NAVIGATION ===== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: rgba(10,15,26,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+.nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.nav-brand .bus-icon {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.nav-brand span.mate { color: var(--accent); }
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 6px;
+}
+.nav-links a {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all .2s;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--text-primary);
+  background: var(--accent-glow);
+}
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding-top: var(--nav-h);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+  pointer-events: none;
+  animation: floatA 10s ease-in-out infinite;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -100px; left: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(96,165,250,0.08), transparent 70%);
+  pointer-events: none;
+  animation: floatB 14s ease-in-out infinite;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent-light);
+  margin-bottom: 28px;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.hero h1 .highlight {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 40%, var(--accent) 60%, var(--accent-light) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerText 4s linear infinite;
+}
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-bottom: 40px;
+  line-height: 1.8;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-meta-item .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.hero-meta-item .value {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.hero-stat .num {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.hero-stat .txt {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatA {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(40px,-50px) scale(1.12); }
+  66%     { transform: translate(-20px,30px) scale(0.94); }
+}
+@keyframes floatB {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(-30px,20px) scale(1.06); }
+  66%     { transform: translate(25px,-25px) scale(0.97); }
+}
+@keyframes shimmerText {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes badgeGlow {
+  0%,100% { box-shadow: 0 0  0px 0px rgba(251,146,60,0);    }
+  50%     { box-shadow: 0 0 24px 6px rgba(251,146,60,0.18); }
+}
+@keyframes statSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero entrance — staggered */
+.nav           { animation: fadeInDown 0.6s cubic-bezier(0.22,1,0.36,1) 0s    both; }
+.hero-badge    { animation: fadeInDown 0.7s cubic-bezier(0.22,1,0.36,1) 0.15s both,
+                             badgeGlow  3s  ease-in-out                  2s    infinite; }
+.hero h1       { animation: fadeInUp   0.8s cubic-bezier(0.22,1,0.36,1) 0.35s both; }
+.hero-subtitle { animation: fadeInUp   0.8s cubic-bezier(0.22,1,0.36,1) 0.55s both; }
+.hero-meta     { animation: fadeInUp   0.8s cubic-bezier(0.22,1,0.36,1) 0.75s both; }
+.hero-stats    { animation: fadeInUp   0.8s cubic-bezier(0.22,1,0.36,1) 0.95s both; }
+.hero-stat:nth-child(1) { animation: statSlideIn 0.5s ease 1.10s both; }
+.hero-stat:nth-child(2) { animation: statSlideIn 0.5s ease 1.22s both; }
+.hero-stat:nth-child(3) { animation: statSlideIn 0.5s ease 1.34s both; }
+.hero-stat:nth-child(4) { animation: statSlideIn 0.5s ease 1.46s both; }
+
+/* ===== COMPONENTS GRID ===== */
+.components-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.comp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+}
+.comp-card:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+  transform: translateY(-4px);
+}
+.comp-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.comp-card:nth-child(1)::before { background: var(--accent); }
+.comp-card:nth-child(2)::before { background: var(--green); }
+.comp-card:nth-child(3)::before { background: var(--blue); }
+.comp-card:nth-child(4)::before { background: var(--purple); }
+.comp-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+.comp-card:nth-child(1) .comp-icon { background: rgba(251,146,60,0.12); }
+.comp-card:nth-child(2) .comp-icon { background: var(--green-muted); }
+.comp-card:nth-child(3) .comp-icon { background: rgba(96,165,250,0.12); }
+.comp-card:nth-child(4) .comp-icon { background: rgba(167,139,250,0.12); }
+.comp-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.comp-card .member {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.comp-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.comp-card .tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.tech-tag {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ===== DOMAIN ===== */
+.domain-blocks {
+  display: grid;
+  gap: 32px;
+}
+.domain-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+}
+.domain-block h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.domain-block h3 .tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: var(--accent-glow);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-weight: 500;
+}
+.domain-block p, .domain-block ul {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.domain-block ul {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+.domain-block ul li {
+  margin-bottom: 6px;
+}
+.obj-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.obj-item {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  border-left: 3px solid var(--accent);
+}
+.obj-item h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.obj-item p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ===== METHODOLOGY ===== */
+.method-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+.method-step {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+.method-step .step-num {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0.4;
+  margin-bottom: 8px;
+}
+.method-step h4 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.method-step p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ===== MILESTONES ===== */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 14px; top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--blue), var(--green));
+  border-radius: 2px;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -34px; top: 28px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg-deep);
+}
+.timeline-item.completed::before { background: var(--green); }
+.timeline-item.upcoming::before { background: var(--text-muted); border: 3px dashed var(--text-muted); background: transparent; }
+.timeline-item h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.timeline-item .date {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.timeline-item .marks {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.timeline-item p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.status-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  padding: 2px 10px;
+  border-radius: 100px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.status-badge.done { background: var(--green-muted); color: var(--green); }
+.status-badge.pending { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+
+/* ===== DOCUMENTS & SLIDES ===== */
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.doc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all .25s;
+}
+.doc-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+.doc-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.doc-icon.pdf { background: rgba(248,113,113,0.12); }
+.doc-icon.pptx { background: rgba(251,146,60,0.12); }
+.doc-icon.link { background: rgba(96,165,250,0.12); }
+.doc-card h4 {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.doc-card .doc-status {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ===== ABOUT US ===== */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.team-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  transition: all .3s;
+}
+.team-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+}
+.team-avatar {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.team-card:nth-child(1) .team-avatar { background: linear-gradient(135deg, rgba(251,146,60,0.25), rgba(251,146,60,0.05)); }
+.team-card:nth-child(2) .team-avatar { background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.05)); }
+.team-card:nth-child(3) .team-avatar { background: linear-gradient(135deg, rgba(96,165,250,0.25), rgba(96,165,250,0.05)); }
+.team-card:nth-child(4) .team-avatar { background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(167,139,250,0.05)); }
+.team-card h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.team-card .sid {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.team-card .role {
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.team-card .bio {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.team-card .email-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding: 5px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  transition: all .2s;
+}
+.team-card .email-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===== CONTACT ===== */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.contact-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.contact-item h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.contact-item p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.contact-form {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+.contact-form h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--accent);
+}
+.form-group textarea { min-height: 120px; resize: vertical; }
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--accent);
+  color: var(--bg-deep);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-submit:hover {
+  background: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 48px 0 32px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.footer p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+.footer .sliit-brand {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-links { 
+    display: none; 
+    position: absolute;
+    top: var(--nav-h);
+    left: 0; right: 0;
+    background: rgba(10,15,26,0.98);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-links.open { display: flex; }
+  .nav-toggle { display: block; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; }
+  .components-grid { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .timeline { padding-left: 32px; }
+  .timeline::before { left: 10px; }
+  .timeline-item::before { left: -28px; }
+  .section { padding: 64px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="navbar">
+  <div class="container">
+    <a href="#home" class="nav-brand">
+      <div class="bus-icon">🚌</div>
+      Bus<span class="mate">Mate</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#domain">Domain</a></li>
+      <li><a href="#milestones">Milestones</a></li>
+      <li><a href="#documents">Documents</a></li>
+      <li><a href="#slides">Presentations</a></li>
+      <li><a href="#about">About Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">☰</button>
+  </div>
+</nav>
+
+<!-- ===== HERO / HOME ===== -->
+<section class="hero section" id="home">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        RP-25-26J-096 &middot; SLIIT Research Project 2025/26
+      </div>
+      <h1>
+        <span class="highlight">BusMate</span><br>
+        Intelligent Multi-Modal<br>
+        Driver Safety System
+      </h1>
+      <p class="hero-subtitle">
+        A comprehensive real-time behavioral analysis platform combining emotion profiling, drowsiness detection, road sign recognition, and scene-based hazard scoring — purpose-built for Sri Lankan public transport safety.
+      </p>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="label">Institution</span>
+          <span class="value">Sri Lanka Institute of Information Technology</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="label">Department</span>
+          <span class="value">Information Technology</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="label">Specialization</span>
+          <span class="value">Data Science</span>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">4</div>
+          <div class="txt">Research Components</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">4</div>
+          <div class="txt">Team Members</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">7+</div>
+          <div class="txt">Deep Learning Models</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">Real-Time</div>
+          <div class="txt">Multi-Modal Analysis</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESEARCH COMPONENTS OVERVIEW ===== -->
+<section class="section" id="components">
+  <div class="container">
+    <span class="section-label">System Components</span>
+    <h2 class="section-title">Four Integrated Research Modules</h2>
+    <p class="section-desc">Each component addresses a distinct dimension of driver safety, and together they form a unified intelligent system for real-time monitoring and alerting.</p>
+    <div class="components-grid">
+
+      <!-- Component 1: Emotion -->
+      <div class="comp-card">
+        <div class="comp-icon">😠</div>
+        <h3>Emotion Shift Profile Analysis</h3>
+        <div class="member">IT22608222 · Weerakkody D.S.N</div>
+        <p>Monitors driver facial expressions using a CNN trained on FER-2013 to compute a novel Behavioural Volatility Index (BVI) that quantifies emotional stability across a rolling 30-frame window. BVI combines transition rate, emotion variance, and Shannon entropy to classify drivers as stable, unstable, or erratic.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">Keras CNN</span>
+          <span class="tech-tag">Haar Cascade</span>
+          <span class="tech-tag">BVI Metric</span>
+          <span class="tech-tag">FER-2013</span>
+          <span class="tech-tag">MongoDB</span>
+        </div>
+      </div>
+
+      <!-- Component 2: Drowsiness -->
+      <div class="comp-card">
+        <div class="comp-icon">😴</div>
+        <h3>Reliability-Aware Drowsiness Detection</h3>
+        <div class="member">IT22115898 · Uddala W.U.P</div>
+        <p>A five-model progressive pipeline using EfficientNet-B0 with CNN→LSTM temporal fusion. Introduces a novel Reliability Gate mechanism that dynamically weights eye-region signals based on estimated quality, enabling robust multi-modal fusion even under occlusion or poor lighting.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">EfficientNet-B0</span>
+          <span class="tech-tag">LSTM</span>
+          <span class="tech-tag">Transformer</span>
+          <span class="tech-tag">MS-TCN</span>
+          <span class="tech-tag">Reliability Gate</span>
+        </div>
+      </div>
+
+      <!-- Component 3: Road Signs -->
+      <div class="comp-card">
+        <div class="comp-icon">🚸</div>
+        <h3>Robust Road Sign Detection</h3>
+        <div class="member">IT22579218 · Hetti Thanthrige N.K</div>
+        <p>Detects and classifies road sign quality using a YOLO-based detector with SAHI slice-based augmentation for small sign detection. An ensemble of MobileNetV2, custom CNN, and YOLO classifiers provides robust sign condition assessment — normal vs. damaged — for Sri Lankan road conditions.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">YOLOv8</span>
+          <span class="tech-tag">SAHI</span>
+          <span class="tech-tag">MobileNetV2</span>
+          <span class="tech-tag">Ensemble</span>
+          <span class="tech-tag">MJPEG Stream</span>
+        </div>
+      </div>
+
+      <!-- Component 4: Road Hazard -->
+      <div class="comp-card">
+        <div class="comp-icon">🛣️</div>
+        <h3>Hybrid Road Hazard Scoring</h3>
+        <div class="member">IT22189080 · Gunawardena S.T</div>
+        <p>Fuses semantic scene understanding (SegFormer with 16 safety classes) with map-based terrain analysis (GPS, SRTM elevation, route curvature) into a composite hazard score. A custom fusion neural network learns the relationship between visual scene risk and geographic map risk factors.</p>
+        <div class="tech-tags">
+          <span class="tech-tag">SegFormer</span>
+          <span class="tech-tag">SRTM Elevation</span>
+          <span class="tech-tag">Fusion MLP</span>
+          <span class="tech-tag">Flask + React</span>
+          <span class="tech-tag">WebSocket</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== DOMAIN ===== -->
+<section class="section" id="domain">
+  <div class="container">
+    <span class="section-label">Research Domain</span>
+    <h2 class="section-title">Domain &amp; Literature</h2>
+    <p class="section-desc">Deep learning-based intelligent transportation systems for real-time driver behavioral analysis and road safety in Sri Lanka's public transport sector.</p>
+
+    <div class="domain-blocks">
+
+      <!-- Literature Survey -->
+      <div class="domain-block">
+        <h3>Literature Survey <span class="tag">Background</span></h3>
+        <p>Road traffic injuries remain the leading cause of death for persons aged 5–29 globally, with an estimated 1.19 million fatalities annually (WHO, 2023). In Sri Lanka, fatal bus crashes — such as the Gerandi Ella disaster (June 2025, 23 deaths) and the Badulla crash (September 2025, 15 deaths) — underscore the urgency of proactive driver monitoring. Existing systems focus on single modalities: either physiological sensors, vehicle telemetry, or isolated computer vision tasks. BusMate addresses this by integrating four complementary deep-learning modules into a unified, real-time safety platform covering emotion, alertness, sign recognition, and road hazard assessment.</p>
+      </div>
+
+      <!-- Research Gap -->
+      <div class="domain-block">
+        <h3>Research Gap <span class="tag">Gap Analysis</span></h3>
+        <p>Current driver monitoring systems exhibit five critical gaps: (1) no composite metric for emotional volatility beyond simple emotion classification, (2) absence of reliability weighting in multi-modal drowsiness fusion, (3) limited road sign condition assessment under real-world degradation, (4) no integration of visual scene analysis with geographic terrain data for holistic hazard scoring, and (5) insufficient validation under Sri Lankan driving conditions. BusMate directly addresses each of these gaps through its four research components.</p>
+      </div>
+
+      <!-- Research Problem -->
+      <div class="domain-block">
+        <h3>Research Problem <span class="tag">Problem Statement</span></h3>
+        <p><em>"How can multiple deep-learning-based driver behavior analysis modules — emotion profiling, drowsiness detection, road sign recognition, and scene-terrain hazard scoring — be integrated into a cohesive real-time system that provides proactive safety alerts for Sri Lankan public transport drivers, with statistically validated metrics and deployment-ready performance?"</em></p>
+      </div>
+
+      <!-- Objectives -->
+      <div class="domain-block">
+        <h3>Research Objectives <span class="tag">Objectives</span></h3>
+        <div class="obj-grid">
+          <div class="obj-item">
+            <h4>Emotion Shift Analysis</h4>
+            <p>Develop and validate the BVI metric for real-time driver emotional volatility quantification using CNN-based facial emotion recognition.</p>
+          </div>
+          <div class="obj-item">
+            <h4>Drowsiness Detection</h4>
+            <p>Design a reliability-aware temporal fusion architecture for drowsiness detection with subject-independent evaluation on CPU hardware.</p>
+          </div>
+          <div class="obj-item">
+            <h4>Road Sign Detection</h4>
+            <p>Build a robust road sign detection and condition classification system using YOLO + SAHI + ensemble classifiers for Sri Lankan road conditions.</p>
+          </div>
+          <div class="obj-item">
+            <h4>Road Hazard Scoring</h4>
+            <p>Fuse SegFormer scene segmentation with SRTM terrain analysis into a composite road hazard scoring system with neural fusion.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Methodology -->
+      <div class="domain-block">
+        <h3>Methodology <span class="tag">Approach</span></h3>
+        <p>The project follows an Agile Scrum methodology adapted for deep learning research, where each component represents a sprint with defined objectives, deliverables, and evaluation criteria. Development proceeds through iterative cycles of data collection, model training, evaluation, and refinement.</p>
+        <div class="method-flow">
+          <div class="method-step">
+            <div class="step-num">01</div>
+            <h4>Data Collection</h4>
+            <p>FER-2013, UTA-RLDD, YAWDD, NTHU-DDD, custom datasets</p>
+          </div>
+          <div class="method-step">
+            <div class="step-num">02</div>
+            <h4>Model Training</h4>
+            <p>CNN, LSTM, Transformer, TCN, SegFormer, YOLO architectures</p>
+          </div>
+          <div class="method-step">
+            <div class="step-num">03</div>
+            <h4>Integration</h4>
+            <p>Flask/Node.js backend, React frontend, MongoDB, Socket.IO</p>
+          </div>
+          <div class="method-step">
+            <div class="step-num">04</div>
+            <h4>Validation</h4>
+            <p>Statistical tests, subject-independent evaluation, field testing</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technologies -->
+      <div class="domain-block">
+        <h3>Technologies Used <span class="tag">Tech Stack</span></h3>
+        <div class="tech-tags" style="gap:8px; flex-wrap:wrap; display:flex; margin-top:10px;">
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Python</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">PyTorch</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Keras / TensorFlow</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">YOLOv8 (Ultralytics)</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">EfficientNet-B0</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">SegFormer</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">OpenCV</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">SAHI</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Flask</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Node.js / Express</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">React + Vite</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">MongoDB</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Socket.IO</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">WebSocket</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Google Colab</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">Jupyter Notebook</span>
+          <span class="tech-tag" style="padding:6px 14px; font-size:0.78rem;">SRTM Elevation</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== MILESTONES ===== -->
+<section class="section" id="milestones">
+  <div class="container">
+    <span class="section-label">Project Timeline</span>
+    <h2 class="section-title">Milestones &amp; Assessments</h2>
+    <p class="section-desc">Key deliverables and assessment milestones for the BusMate research project across the 2025–2026 academic year.</p>
+
+    <div class="timeline">
+
+      <div class="timeline-item completed">
+        <h3>Topic Assessment Form (TAF) <span class="status-badge done">Completed</span></h3>
+        <div class="date">June – July 2025</div>
+        <p>Initial topic submission and supervisor evaluation of the proposed research direction.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Project Charter <span class="status-badge done">Completed</span></h3>
+        <div class="date">August 2025</div>
+        <p>Project scope, team roles, risk management, and communication plan defined.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Project Proposal <span class="status-badge done">Completed</span></h3>
+        <div class="date">September 2025</div>
+        <div class="marks">Marks allocated: Individual proposals per component</div>
+        <p>Draft and final proposal reports including literature review, research gaps, objectives, methodology, and feasibility analysis.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Proposal Presentation <span class="status-badge done">Completed</span></h3>
+        <div class="date">September – October 2025</div>
+        <p>Formal presentation of the research proposal to the evaluation panel.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Progress Presentation I <span class="status-badge done">Completed</span></h3>
+        <div class="date">January 2026</div>
+        <p>First progress review demonstrating initial model training results, system architecture, and project evidence for each component.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Check List I <span class="status-badge done">Completed</span></h3>
+        <div class="date">January – February 2026</div>
+        <p>First checklist assessment covering documentation completeness and development progress.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Research Paper <span class="status-badge done">Completed</span></h3>
+        <div class="date">February – March 2026</div>
+        <p>IEEE-format research papers for each component, targeting IEEE TENCON 2026 and related venues.</p>
+      </div>
+
+      <div class="timeline-item completed">
+        <h3>Progress Presentation II <span class="status-badge done">Completed</span></h3>
+        <div class="date">March 2026</div>
+        <p>Second progress review with advanced results, validation outcomes, and integration progress.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>Check List II <span class="status-badge pending">Upcoming</span></h3>
+        <div class="date">April 2026</div>
+        <p>Second checklist assessment covering final development and documentation status.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>Final Reports <span class="status-badge pending">Upcoming</span></h3>
+        <div class="date">April – May 2026</div>
+        <p>Comprehensive final reports for each component with complete results, discussion, and conclusions.</p>
+      </div>
+
+      <div class="timeline-item">
+        <h3>Project Website <span class="status-badge pending">Upcoming</span></h3>
+        <div class="date">May 2026</div>
+        <p>Public-facing project website documenting all components, deliverables, and team information.</p>
+      </div>
+
+      <div class="timeline-item upcoming">
+        <h3>Final Presentation &amp; Viva <span class="status-badge pending">Upcoming</span></h3>
+        <div class="date">May – June 2026</div>
+        <p>Final defense presentation and individual viva examination before the evaluation panel.</p>
+      </div>
+
+      <div class="timeline-item upcoming">
+        <h3>Research Logbook <span class="status-badge pending">Upcoming</span></h3>
+        <div class="date">June 2026</div>
+        <p>Complete research logbook documenting the full project journey and research activities.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== DOCUMENTS ===== -->
+<section class="section" id="documents">
+  <div class="container">
+    <span class="section-label">Deliverables</span>
+    <h2 class="section-title">Documents</h2>
+    <p class="section-desc">All project documents produced throughout the research lifecycle. Click to view or download.</p>
+
+    <div class="docs-grid">
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2&id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports%2F25%5F26J%5F096%5FIT22608222%20%28v2%29%20%282%29%2Epdf&parent=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Proposal — Emotion Shift Analysis</h4>
+          <div class="doc-status">IT22608222 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2&id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports%2F25%5F26J%5F096%5FIT22115898%2Epdf&parent=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Proposal — Drowsiness Detection</h4>
+          <div class="doc-status">IT22115898 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2&id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports%2F25%5F26J%5F096%5FIT22579218%2Epdf&parent=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Proposal — Road Sign Detection</h4>
+          <div class="doc-status">IT22579218 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2&id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports%2F25%5F26J%5F096%5FIT22189080%2Epdf&parent=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F1%2E%20Project%20Proposal%2FIndividual%20Reports" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Proposal — Road Hazard Scoring</h4>
+          <div class="doc-status">IT22189080 &middot; Completed</div>
+        </div>
+      </a>
+      
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2&id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F4%2E%20Research%20Paper%2FEmotion%20Shift%20Analysis%20Research%20Paper%2Epdf&parent=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F4%2E%20Research%20Paper" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Research Paper — Emotion Shift</h4>
+          <div class="doc-status">IT22608222 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="#" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Research Paper — Road Signs</h4>
+          <div class="doc-status">IT22579218 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit-my.sharepoint.com/:x:/r/personal/it22579218_my_sliit_lk/_layouts/15/Doc.aspx?sourcedoc=%7BDC7B63B0-1C53-4AA9-8E68-6B06EDFDFB17%7D&file=MasterSheetOfResearchPapersStudied.xlsx&fromShare=true&action=default&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Check List I Documents</h4>
+          <div class="doc-status">All members &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit-my.sharepoint.com/:w:/r/personal/it22579218_my_sliit_lk/_layouts/15/Doc.aspx?sourcedoc=%7BF5921A66-60CF-4275-8985-C606D1AD60AB%7D&file=Data%20Analysis%20Report.docx&fromShare=true&action=default&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Check List II Documents</h4>
+          <div class="doc-status">All members &middot; Pending</div>
+        </div>
+      </a>
+      <a href="#" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Check List III Documents</h4>
+          <div class="doc-status">All members &middot; Pending</div>
+        </div>
+      </a>
+      <a href="https://mysliit-my.sharepoint.com/:w:/r/personal/it22608222_my_sliit_lk/_layouts/15/Doc.aspx?sourcedoc=%7B4C2F3DCD-133D-4E9D-933D-32737AF40153%7D&file=MLOps%20Report.docx&action=default&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Check List IV Documents</h4>
+          <div class="doc-status">All members &middot; Pending</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/sites/CDAPSubmissionCloud/2526JCloud/Forms/AllItems.aspx?id=%2Fsites%2FCDAPSubmissionCloud%2F2526JCloud%2F25%2D26J%2D096%2DStudents%2F5%2E%20Final%20Report%20%26%20Presentation&viewid=b6c5e95e%2Dd054%2D4e72%2Dbb46%2D33a9940141f2" class="doc-card">
+        <div class="doc-icon pdf">📄</div>
+        <div>
+          <h4>Final Report (Individual × 4)</h4>
+          <div class="doc-status">All members &middot; Pending</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== SLIDES ===== -->
+<section class="section" id="slides">
+  <div class="container">
+    <span class="section-label">Presentations</span>
+    <h2 class="section-title">Presentation Slides</h2>
+    <p class="section-desc">Slide decks used in past and upcoming presentations.</p>
+
+    <div class="docs-grid">
+      <a href="https://mysliit.sharepoint.com/:p:/r/sites/CDAPSubmissionCloud/_layouts/15/Doc.aspx?sourcedoc=%7B49C5A6B3-EF8E-4602-B54D-B036CCD99B1F%7D&file=Blue%20and%20White%20Modern%20Thesis%20Defense%20Presentation.pptx&action=edit&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pptx">📊</div>
+        <div>
+          <h4>Proposal Presentation</h4>
+          <div class="doc-status">September 2025 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/:p:/r/sites/CDAPSubmissionCloud/_layouts/15/Doc.aspx?sourcedoc=%7B99233C91-F686-49F2-9A9E-654BD17BB518%7D&file=Blue%20and%20White%20Modern%20Thesis%20Defense%20Presentation%20(1).pptx&action=edit&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pptx">📊</div>
+        <div>
+          <h4>Progress Presentation I</h4>
+          <div class="doc-status">January 2026 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="https://mysliit.sharepoint.com/:p:/r/sites/CDAPSubmissionCloud/_layouts/15/Doc.aspx?sourcedoc=%7BAF27068A-1388-4D51-9E0C-DD6F9761CCA6%7D&file=Blue%20and%20White%20Modern%20Thesis%20Defense%20Presentation%20(3).pptx&action=edit&mobileredirect=true" class="doc-card">
+        <div class="doc-icon pptx">📊</div>
+        <div>
+          <h4>Progress Presentation II</h4>
+          <div class="doc-status">March 2026 &middot; Completed</div>
+        </div>
+      </a>
+      <a href="#" class="doc-card">
+        <div class="doc-icon pptx">📊</div>
+        <div>
+          <h4>Final Presentation</h4>
+          <div class="doc-status">May – June 2026 &middot; Pending</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== ABOUT US ===== -->
+<section class="section" id="about">
+  <div class="container">
+    <span class="section-label">The Team</span>
+    <h2 class="section-title">About Us</h2>
+    <p class="section-desc">Final-year BSc (Hons) IT students specializing in Data Science at SLIIT, Faculty of Computing.</p>
+
+    <div class="team-grid">
+
+      <div class="team-card">
+        <div class="team-avatar">ST</div>
+        <h3>Gunawardena S.T</h3>
+        <div class="sid">IT22189080</div>
+        <div class="role">Scene Analysis &amp; Road Hazard Scoring</div>
+        <p class="bio">Developed the Hybrid Scene and Map-Based Road Hazard Scoring System using SegFormer semantic segmentation fused with SRTM terrain analysis.</p>
+        <a href="mailto:it22189080@my.sliit.lk" class="email-link">it22189080@my.sliit.lk</a>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">NK</div>
+        <h3>Hetti Thanthrige N.K</h3>
+        <div class="sid">IT22579218</div>
+        <div class="role">Road Sign Detection</div>
+        <p class="bio">Built a robust road sign detection and condition classification system using YOLO + SAHI + ensemble classifiers optimized for Sri Lankan road conditions.</p>
+        <a href="mailto:it22579218@my.sliit.lk" class="email-link">it22579218@my.sliit.lk</a>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">UP</div>
+        <h3>Uddala W.U.P</h3>
+        <div class="sid">IT22115898</div>
+        <div class="role">Drowsiness Detection</div>
+        <p class="bio">Designed a five-model progressive pipeline with a novel Reliability-Aware Temporal Fusion architecture for CPU-deployable drowsiness detection.</p>
+        <a href="mailto:it22115898@my.sliit.lk" class="email-link">it22115898@my.sliit.lk</a>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">DN</div>
+        <h3>Weerakkody D.S.N</h3>
+        <div class="sid">IT22608222</div>
+        <div class="role">Emotion Shift Profile Analysis</div>
+        <p class="bio">Created the BVI (Behavioural Volatility Index) metric and real-time emotion profiling system for continuous driver emotional stability monitoring.</p>
+        <a href="mailto:it22608222@my.sliit.lk" class="email-link">it22608222@my.sliit.lk</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===== CONTACT ===== -->
+<section class="section" id="contact">
+  <div class="container">
+    <span class="section-label">Get in Touch</span>
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-desc">Have questions about BusMate? Reach out to the team or our institution.</p>
+
+    <div class="contact-grid">
+
+      <div class="contact-info">
+        <div class="contact-item">
+          <h4>🏛️ Institution</h4>
+          <p>Sri Lanka Institute of Information Technology (SLIIT)<br>Faculty of Computing<br>Department of Information Technology<br>New Kandy Road, Malabe, Sri Lanka</p>
+        </div>
+        <div class="contact-item">
+          <h4>📋 Project ID</h4>
+          <p>RP-25-26J-096</p>
+        </div>
+        <div class="contact-item">
+          <h4>📧 Team Email Addresses</h4>
+          <p>
+            it22189080@my.sliit.lk<br>
+            it22579218@my.sliit.lk<br>
+            it22115898@my.sliit.lk<br>
+            it22608222@my.sliit.lk
+          </p>
+        </div>
+        <div class="contact-item">
+          <h4>🌐 SLIIT CDAP Portal</h4>
+          <p><a href="http://cdap.sliit.lk/" target="_blank">http://cdap.sliit.lk/</a></p>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <h3>Send us a message</h3>
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" placeholder="What is this regarding?">
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Write your message here..."></textarea>
+        </div>
+        <button class="btn-submit" type="button" onclick="alert('Thank you for your message! We will get back to you soon.')">Send Message →</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <p>
+      <span class="sliit-brand">🚌 BusMate — Intelligent Multi-Modal Driver Safety System</span><br>
+      RP-25-26J-096 &middot; BSc (Hons) IT specialized in Data Science<br>
+      <span class="sliit-brand">Sri Lanka Institute of Information Technology</span> &middot; Faculty of Computing<br>
+      © 2025–2026. All rights reserved.
+    </p>
+  </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+// Mobile nav toggle
+document.getElementById('navToggle').addEventListener('click', function() {
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+// Close mobile nav on link click
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
+    document.getElementById('navLinks').classList.remove('open');
+  });
+});
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop - 100;
+    if (scrollY >= sectionTop) {
+      current = section.getAttribute('id');
+    }
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) {
+      link.classList.add('active');
+    }
+  });
+});
+
+// Fade-in animation on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.comp-card, .domain-block, .timeline-item, .doc-card, .team-card, .contact-item').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+
+// ===== HERO STAT COUNTER =====
+function animateCounter(el, target, suffix, delay, duration) {
+  setTimeout(function() {
+    var start = 0;
+    var step  = target / (duration / 16);
+    function tick() {
+      start = Math.min(start + step, target);
+      el.textContent = Math.floor(start) + suffix;
+      if (start < target) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, delay);
+}
+
+var counterQueue = [];
+document.querySelectorAll('.hero-stat .num').forEach(function(el) {
+  var raw    = el.textContent.trim();
+  var num    = parseInt(raw);
+  var suffix = raw.replace(/[0-9]/g, '');
+  if (!isNaN(num)) {
+    counterQueue.push({ el: el, target: num, suffix: suffix });
+    el.textContent = '0' + suffix;
+  }
+});
+counterQueue.forEach(function(data, i) {
+  animateCounter(data.el, data.target, data.suffix, 1850 + i * 130, 1000);
+});
+</script>
+
+</body>
+</html>
